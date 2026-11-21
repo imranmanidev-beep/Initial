@@ -76,13 +76,6 @@ document.querySelectorAll(".rv").forEach(el => rv.observe(el));
 
 /* ---- preloader, services, gallery, FAQ, footer ---- */
 const reduceM = matchMedia("(prefers-reduced-motion: reduce)").matches;
-const pre = $("pre"), pct = $("pct");
-const endLoad = () => { pre.classList.add("done"); document.body.classList.remove("loading"); setTimeout(() => pre.remove(), 1100); };
-if (reduceM) endLoad(); else {
-  const s = performance.now();
-  (function f(n){ const p = Math.min(1,(n-s)/1500); pct.textContent = String(Math.round(p*100)).padStart(2,"0"); p < 1 ? requestAnimationFrame(f) : setTimeout(endLoad,250); })(s);
-  setTimeout(endLoad, 4500);
-}
 art.bars = [80,140,100,190,150,230].map((h,i)=>`<rect x="${110+i*70}" y="${300-h}" width="44" height="${h}" fill="#12d0ff" fill-opacity="${.3+i*.1}"/>`).join("");
 const mini = k => `<svg viewBox="0 0 640 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="640" height="400" fill="#0a1a3d"/>${art[k]||""}</svg>`;
 const SERVICES = [
