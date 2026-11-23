@@ -42,10 +42,49 @@ $("logo").innerHTML = esc(CONFIG.name.slice(0,-1)) + "<b>" + esc(CONFIG.name.sli
 
 $("groups").innerHTML = Object.entries(TOOLKIT).map(([g,a]) => `<div class="group rv"><h3>${esc(g)}</h3><ul>${a.map((i,n)=>`<li style="--i:${n}">${esc(i)}</li>`).join("")}</ul></div>`).join("");
 
+/* ---- example-solution artwork: every drawing is filled with dummy data ---- */
+const svgT = (x,y,t,sz,c,o) => `<text x="${x}" y="${y}" fill="${c||"#9fb2d0"}" font-size="${sz||12}" font-family="Arial,sans-serif" ${o||""}>${t}</text>`;
+const pill = (x,y,w,label,col) => `<rect x="${x}" y="${y}" width="${w}" height="18" rx="9" fill="${col}" fill-opacity=".18" stroke="${col}" stroke-opacity=".6"/>` + svgT(x+w/2,y+13,label,10,col,'text-anchor="middle"');
+const panel = (title,right) => `<rect x="24" y="20" width="592" height="360" rx="10" fill="#050f2b" stroke="#fff" stroke-opacity=".14"/>` + svgT(46,52,title,17,"#f4f5f7",'font-weight="700"') + svgT(594,52,right||"Sample data",11,"#9fb2d0",'text-anchor="end"');
+const OK = "#35e08a", WAIT = "#ffc857", ACT = "#12d0ff", BAD = "#ff6b6b";
 const art = {
-  report:`<rect x="190" y="30" width="260" height="340" rx="4" fill="#f4f5f7" fill-opacity=".06" stroke="#fff" stroke-opacity=".25"/><rect x="214" y="58" width="120" height="12" rx="6" fill="#12d0ff"/>${[100,126,152,178,204,230,256].map(y=>`<rect x="214" y="${y}" width="212" height="8" rx="4" fill="#fff" fill-opacity=".16"/>`).join("")}<rect x="214" y="290" width="90" height="40" rx="4" fill="none" stroke="#12d0ff" stroke-opacity=".7"/>`,
-  flow:`${[[90,200],[250,110],[250,290],[420,200],[540,200]].map(([x,y])=>`<rect x="${x-50}" y="${y-26}" width="100" height="52" rx="6" fill="#0a1a3d" stroke="#fff" stroke-opacity=".3"/>`).join("")}<path d="M140 200 L200 110 M140 200 L200 290 M300 110 L370 200 M300 290 L370 200 M470 200 L490 200" stroke="#12d0ff" stroke-width="2" fill="none"/>`,
-  grid:`${[0,1,2].map(r=>[0,1,2,3].map(c=>`<rect x="${70+c*130}" y="${60+r*100}" width="110" height="80" rx="6" fill="${(r+c)%3==0?"#12d0ff":"#fff"}" fill-opacity="${(r+c)%3==0?.55:.08}" stroke="#fff" stroke-opacity=".2"/>`).join("")).join("")}`
+  /* Paper-to-Digital Records: filled register table + migration progress */
+  report: (() => {
+    const list = [["R-1041","Purchase register","Stores","Digitised",OK],["R-1042","Staff attendance","HR","Digitised",OK],["R-1043","Gate pass log","Security","In progress",ACT],["R-1044","Maintenance forms","Workshop","Digitised",OK],["R-1045","Vendor ledger","Accounts","Pending",WAIT]];
+    let s = panel("Records register");
+    s += svgT(46,84,"ID",11) + svgT(120,84,"Record",11) + svgT(320,84,"Department",11) + svgT(466,84,"Status",11) + `<line x1="40" x2="600" y1="94" y2="94" stroke="#fff" stroke-opacity=".14"/>`;
+    list.forEach((r,i) => { const y = 104 + i*40; s += (i%2 ? "" : `<rect x="36" y="${y}" width="568" height="34" rx="6" fill="#fff" fill-opacity=".04"/>`) + svgT(46,y+22,r[0],12,ACT) + svgT(120,y+22,r[1],13,"#f4f5f7") + svgT(320,y+22,r[2],13) + pill(466,y+8,92,r[3],r[4]); });
+    s += `<rect x="46" y="322" width="548" height="10" rx="5" fill="#fff" fill-opacity=".08"/><rect x="46" y="322" width="428" height="10" rx="5" fill="${ACT}"/>` + svgT(46,356,"Migration progress",12) + svgT(594,356,"78% · 1,248 records",12,"#f4f5f7",'text-anchor="end"');
+    return s;
+  })(),
+  /* Office and Equipment Setup: approval workflow, steps filled with names, status and dates */
+  flow: (() => {
+    const st = [["Request","Ali · Stores","Submitted","12 Nov",OK],["Dept review","Sara · HOD","Approved","13 Nov",OK],["Manager","Usman","Pending","Today",WAIT],["Finance","Bilal","Waiting","-","#6b7a99"]];
+    let s = panel("Purchase approval · PR-2087");
+    st.forEach((r,i) => { const x = 40 + i*142, c = r[4], act = i === 2;
+      s += `<rect x="${x}" y="110" width="124" height="130" rx="10" fill="${c}" fill-opacity="${act?.18:.1}" stroke="${c}" stroke-opacity="${act?1:.5}" stroke-width="${act?2:1}"/>`
+        + `<circle cx="${x+22}" cy="136" r="11" fill="${c}" fill-opacity=".9"/>` + svgT(x+22,140,i < 2 ? "✓" : i+1,12,"#02122e",'text-anchor="middle" font-weight="700"')
+        + svgT(x+40,141,r[0],13,"#f4f5f7",'font-weight="700"') + svgT(x+14,176,r[1],12) + pill(x+14,188,96,r[2],c) + svgT(x+14,226,r[3],11);
+      if (i < 3) s += `<path d="M${x+126} 175 h12 m-5 -5 l5 5 l-5 5" stroke="${ACT}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+    });
+    s += `<rect x="46" y="282" width="548" height="10" rx="5" fill="#fff" fill-opacity=".08"/><rect x="46" y="282" width="274" height="10" rx="5" fill="${WAIT}"/>` + svgT(46,320,"Step 3 of 4 · waiting for manager approval",13,"#f4f5f7") + svgT(594,320,"Elapsed: 2 days",12,"#9fb2d0",'text-anchor="end"') + svgT(46,350,"Amount: PKR 185,000 · Barcode scanners (x10)",12);
+    return s;
+  })(),
+  /* Inventory and Stock Control: filled stock bars with quantities and status */
+  grid: (() => {
+    const list = [["Barcode scanners",84,"In stock",OK],["A4 paper cartons",32,"Low",WAIT],["Label printer rolls",12,"Reorder",BAD],["Network switches",46,"In stock",OK],["Toner cartridges",9,"Reorder",BAD]];
+    let s = panel("Stock levels","Sample data · 1,482 items");
+    list.forEach((r,i) => { const y = 82 + i*58, w = r[1]/100*230, c = r[3]; s += svgT(46,y+20,r[0],13,"#f4f5f7") + `<rect x="220" y="${y+6}" width="230" height="16" rx="8" fill="#fff" fill-opacity=".08"/><rect x="220" y="${y+6}" width="${w}" height="16" rx="8" fill="${c}" fill-opacity=".85"/>` + svgT(462,y+20,r[1],13,"#f4f5f7") + pill(510,y+5,80,r[2],c); });
+    return s;
+  })(),
+  /* Support and Training (services hover preview): filled bar chart with values */
+  bars: (() => {
+    const d = [["Mon",14],["Tue",22],["Wed",18],["Thu",30],["Fri",26],["Sat",12]];
+    let s = panel("Tickets resolved","Sample data · this week");
+    [0,10,20,30].forEach(g => { const y = 320 - g*7; s += `<line x1="70" x2="594" y1="${y}" y2="${y}" stroke="#fff" stroke-opacity=".1"/>` + svgT(46,y+4,g,11); });
+    d.forEach((r,i) => { const x = 92 + i*84, h = r[1]*7; s += `<rect x="${x}" y="${320-h}" width="48" height="${h}" rx="4" fill="${ACT}" fill-opacity="${(.45+i*.09).toFixed(2)}"/>` + svgT(x+24,314-h,r[1],12,"#f4f5f7",'text-anchor="middle" font-weight="700"') + svgT(x+24,342,r[0],12,"#9fb2d0",'text-anchor="middle"'); });
+    return s;
+  })()
 };
 $("projects").innerHTML = PROJECTS.map(p => `<article class="project rv"><div class="vis"><svg viewBox="0 0 640 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="640" height="400" fill="#0a1a3d"/>${art[p.v]||""}</svg></div>
 <div class="info"><p class="cat">${esc(p.category)}</p><h3>${esc(p.title)}</h3><p>${esc(p.desc)}</p>
@@ -76,7 +115,6 @@ document.querySelectorAll(".rv").forEach(el => rv.observe(el));
 
 /* ---- preloader, services, gallery, FAQ, footer ---- */
 const reduceM = matchMedia("(prefers-reduced-motion: reduce)").matches;
-art.bars = [80,140,100,190,150,230].map((h,i)=>`<rect x="${110+i*70}" y="${300-h}" width="44" height="${h}" fill="#12d0ff" fill-opacity="${.3+i*.1}"/>`).join("");
 const mini = k => `<svg viewBox="0 0 640 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="640" height="400" fill="#0a1a3d"/>${art[k]||""}</svg>`;
 const SERVICES = [
   {t:"Business Software & ERP", d:"Inventory, purchasing, accounts and reporting systems that replace paper and spreadsheets.", v:"report"},
